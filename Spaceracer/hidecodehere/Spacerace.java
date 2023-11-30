@@ -42,22 +42,22 @@ public class Spacerace {
      *************************/
     public Spacerace(){
 
-        degreeArtMap.put(0, "/home/riverx/DS1/javaprava/Spaceracer/space010.txt");
-        degreeArtMap.put(20, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        degreeArtMap.put(40, "/home/riverx/DS1/javaprava/Spaceracer/space4050.txt");
-        degreeArtMap.put(60, "/home/riverx/DS1/javaprava/Spaceracer/space6070.txt");
-        //degreeArtMap.put(90, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(120, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(140, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(180, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(200, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(220, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(240, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(260, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(280, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        //degreeArtMap.put(300, "/home/riverx/DS1/javaprava/Spaceracer/space2030.txt");
-        degreeArtMap.put(320, "/home/riverx/DS1/javaprava/Spaceracer/space32030.txt");
-        degreeArtMap.put(340, "/home/riverx/DS1/javaprava/Spaceracer/space34050.txt");
+        degreeArtMap.put(0,   "asciiArt/space010.txt");
+        degreeArtMap.put(20,  "asciiArt/space2030.txt");
+        degreeArtMap.put(40,  "asciiArt/space4050.txt");
+        degreeArtMap.put(60,  "asciiArt/space6070.txt");
+        degreeArtMap.put(90,  "asciiArt/space90110.txt");
+        degreeArtMap.put(120, "asciiArt/space120130.txt");
+        degreeArtMap.put(140, "asciiArt/space140150.txt");
+        degreeArtMap.put(160, "asciiArt/space160170.txt");
+        degreeArtMap.put(180, "asciiArt/space180190.txt");
+        degreeArtMap.put(200, "asciiArt/space200210.txt");
+        degreeArtMap.put(220, "asciiArt/space220230.txt");
+        degreeArtMap.put(240, "asciiArt/space240260.txt");
+        degreeArtMap.put(270, "asciiArt/space270290.txt");
+        degreeArtMap.put(300, "asciiArt/space300310.txt");
+        degreeArtMap.put(320, "asciiArt/space32030.txt");
+        degreeArtMap.put(340, "asciiArt/space34050.txt");
     }
 
     public void loadAsciiArtForCurrentPosition(double position) {
@@ -234,10 +234,16 @@ public class Spacerace {
         String formattedTime = time.format(Clocked_in);
 
         LocalDate winterSolstice = LocalDate.of(date.getYear(), 12, 21);
-        String solsticeAsciiPath = "/home/riverx/DS1/javaprava/Spaceracer/solstice.txt";
+        String solsticeAsciiPath = "asciiArt/solstice.txt";
 
-        LocalDate vernalEquinox = LocalDate.of(date.getYear(), 03, 20);
-        String vernalAsciiPath = "/home/riverx/DS1/javaprava/Spaceracer/vernaleq.txt";
+        LocalDate vernalEquinox = LocalDate.of(date.getYear(), 3, 20);
+        String vernalAsciiPath = "asciiArt/vernaleq.txt";
+
+        LocalDate summerSolstice = LocalDate.of(date.getYear(), 6, 21);
+        String summerSolPath = "asciiArt/summersolstice.txt";
+
+        LocalDate autumnEquinox = LocalDate.of(date.getYear(), 9, 22);
+        String autumnEqPath = "asciiArt/autumneq.txt";
 
         double position = calculateEarthPosition(date);
         System.out.println("Approximate position of the Earth on " + date + ": " + position + " degrees");
@@ -245,7 +251,6 @@ public class Spacerace {
         spacerace.startTwinkling();
         System.out.println("Press 'x' to stop twinkling...");
 
-        //Implement all special date handling here
 
         /**********************
         * HERE LIES THE TRIES *
@@ -254,9 +259,13 @@ public class Spacerace {
         try {
             if(date.equals(winterSolstice)) {
                 spacerace.asciiArt(solsticeAsciiPath);
-            } else if(date.equals(vernalEquinox)){
+            } else if(date.equals(vernalEquinox)) {
                 spacerace.asciiArt(vernalAsciiPath);
-            } else {
+            } else if (date.equals(summerSolstice)) {
+                spacerace.asciiArt(summerSolPath);
+            } else if (date.equals(autumnEquinox)) {
+                spacerace.asciiArt(autumnEqPath);
+            }else {
                 spacerace.loadAsciiArtForCurrentPosition(position);
             }
             //spacerace.findMarkerPositions('!', '=');
