@@ -1,12 +1,9 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -14,26 +11,37 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.NavigableMap;
-
 import static java.time.format.DateTimeFormatter.ofPattern;
 
+
+/*
+* This is a rough estimation of where the earth currently is in its orbit path.
+* It is a text based ascii drawing implemented by reprinting a character array
+* over and over to create a slight animation effect. The stars are programed to
+* twinkle at a steady rate while also incrementing seconds on the clock to avoid
+* thread issues. In progress are more animations and up to date information in the
+* text sections.
+*
+ */
 public class Spacerace {
     public String[] artLines;
-    private volatile boolean keepTwinkling = true;
+    private Thread twinklingThread;
     private NavigableMap<Integer, String> degreeArtMap = new TreeMap<>();
+
+
+    /*****************************************************************************************************
+    * Designed for an approximation of earths orbit based on treating it as a 360 degree circle.         *
+    * This project is not suitable for the actual location of earth on its ellipse. More advanced        *
+    * calculations may be done in the future.                                                            *
+    * ***************************************************************************************************/
 
     public static double calculateEarthPosition(LocalDate date) {
         // Reference date: January 1st, 2000, where Earth is considered to be at 0 degrees
         LocalDate referenceDate = LocalDate.of(2000, 1, 1);
-
-        // Days between reference date and target date
         long daysBetween = ChronoUnit.DAYS.between(referenceDate, date);
 
-        // Approximate orbital position (in a very simplified model, not accurate for real-world usage)
         // Earth moves roughly 360/365.25 degrees per day along its orbit
-        double position = (daysBetween * 360.0 / 365.25) % 360;
-
-        return position;
+        return (daysBetween * 360.0 / 365.25) % 360;
     }
 
 
@@ -60,20 +68,19 @@ public class Spacerace {
         degreeArtMap.put(340, "asciiArt/space34050.txt");
     }
 
+     /*************************************************
+     * Takes position calculated and finds the        *
+     * corresponding filepath in the Navigable Map    *
+     *************************************************/
+
     public void loadAsciiArtForCurrentPosition(double position) {
         String filePath;
-        // Check if it's the winter solstice
-        if (LocalDate.now().equals(LocalDate.of(LocalDate.now().getYear(), 12, 21))) {
-            filePath = degreeArtMap.get(320); // Load solstice art
-        } else {
-            // Find the appropriate file for the current position
-            Integer key = degreeArtMap.floorKey((int) position);
-            if (key == null) {
-                key = 0; // Default to the first range if position is below the lowest key
-            }
-            filePath = degreeArtMap.get(key);
+        // Find the appropriate file for the current position
+        Integer key = degreeArtMap.floorKey((int) position);
+        if (key == null) {
+            key = 0; // Default to the first range if position is below the lowest key
         }
-
+        filePath = degreeArtMap.get(key);
         // Load the ASCII art from the file path
         try {
             asciiArt(filePath);
@@ -82,24 +89,21 @@ public class Spacerace {
         }
     }
 
+     /********************************************
+     * Creates the array from the file path      *
+     * specified. Needed for twinkling and clock. *
+     ********************************************/
+
     public void asciiArt(String filePath) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(filePath));
         artLines = lines.toArray(new String[0]);
     }
 
-    public static void displayAsciiArt(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading ASCII art file: " + e.getMessage());
-        }
-    }
-
+     /********************************
+     * Starts the twinkling function.*
+     ********************************/
     public void startTwinkling() {
-        Thread twinklingThread = new Thread(() -> {
+        twinklingThread = new Thread(() -> {
             try {
                 twinklingEffect();
             } catch (InterruptedException e) {
@@ -109,41 +113,44 @@ public class Spacerace {
         twinklingThread.start();
     }
 
+    /************************************************************************************
+     * Searches for my target characters which represent stars and slowly replaces them *
+     * with different characters to simulate twinkling. The clear screen function is    *
+     * called to keep the presentation focused on the current character array.          *
+     ***********************************************************************************/
+
 
     public void twinklingEffect() throws InterruptedException {
         Random random = new Random();
-        char[] starFadeChars = {'*', '+', '.', ' '}; // Fading characters for '*'
+        char[] starFadeChars = {'*', '+', '.', ' '};
         char[] plusFadeChars = {'┼', '├', '─', ' '}; // Fading characters for '┼'
         int maxFadeIndex = starFadeChars.length - 1;
+        int maxPlusFadeIndex = plusFadeChars.length -1;
         String[] originalArt = Arrays.copyOf(artLines, artLines.length);
 
-        DateTimeFormatter mediumClockedIn = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
+        DateTimeFormatter mediumClockedIn = DateTimeFormatter.ofPattern("HH:mm");
         LocalDate date = LocalDate.now();
         double position = calculateEarthPosition(date);
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-        while (keepTwinkling) {
+        //infinite loop, the stars will shine until the program is terminated
+        while (true) {
             clearScreen();
-
-            // Update twinkling effect
             for (int j = 0; j < artLines.length; j++) {
                 char[] lineChars = artLines[j].toCharArray();
                 for (int k = 0; k < lineChars.length; k++) {
-                    if (random.nextBoolean()) {
+                    if (originalArt[j].charAt(k) == '*' && random.nextFloat() < 0.4) {
                         int fadeIndex = random.nextInt(maxFadeIndex + 1);
-                        if (originalArt[j].charAt(k) == '*') {
-                            lineChars[k] = starFadeChars[fadeIndex];
-                        } else if (originalArt[j].charAt(k) == '┼') {
-                            lineChars[k] = plusFadeChars[fadeIndex];
-                        }
+                        lineChars[k] = starFadeChars[fadeIndex];
+                    }
+                    else if (originalArt[j].charAt(k) == '┼' && random.nextFloat() < 0.4) {
+                        int fadeIndex = random.nextInt(maxPlusFadeIndex + 1);
+                        lineChars[k] = plusFadeChars[fadeIndex];
                     }
                 }
                 artLines[j] = new String(lineChars);
             }
-
-            // Update time
             LocalTime updatedTime = LocalTime.now();
-            String updatedFormattedTime = updatedTime.format(mediumClockedIn);
+            String updatedFormattedTime = updatedTime.truncatedTo(ChronoUnit.MINUTES).format(mediumClockedIn);
             OVER_WRITE(16, 195, String.valueOf(position), 17, 188, formattedDate, 18, 188, updatedFormattedTime);
 
             displayArt();
@@ -153,12 +160,9 @@ public class Spacerace {
     }
 
 
-
-
-
-    public void stopTwinkling() {
-        keepTwinkling = false;
-    }
+     /***************************************************************
+     * Clears the previous string array output to help with format. *
+     ***************************************************************/
 
 
     private void clearScreen() {
@@ -168,12 +172,10 @@ public class Spacerace {
         System.out.flush();
     }
 
-    /**
-     * Finds the positions of two specified markers in the array
-     *
-     * @param marker1 The first marker character to find.
-     * @param marker2 The second marker character to find.
-     */
+     /******************************************************************************
+     * Finds the positions of two specified markers in the array. Use this to find *
+     * and mark locations in the array for desired changes.                        *
+     ******************************************************************************/
     public void findMarkerPositions(char marker1, char marker2) {
         for (int i = 0; i < artLines.length; i++) {
             for (int j = 0; j < artLines[i].length(); j++) {
@@ -187,11 +189,21 @@ public class Spacerace {
         }
     }
 
+
+
+    /******************************************************************************************************************
+     * Locations of the markers as well as the desired new string are passed in to overwrite with time, date, coord.  *
+     *****************************************************************************************************************/
+
     public void OVER_WRITE(int row1, int col1, String new_row1, int row2, int col2, String new_row2, int row3, int col3, String new_row3) {
         artLines[row1] = replaceSubstring(artLines[row1], col1, String.valueOf(new_row1));
         artLines[row2] = replaceSubstring(artLines[row2], col2, String.valueOf(new_row2));
         artLines[row3] = replaceSubstring(artLines[row3], col3, String.valueOf(new_row3));
     }
+
+     /********************************************************************************
+     * Logic to input actual time, date, and coordinates on their respective markers *
+     ********************************************************************************/
 
     private String replaceSubstring(String str, int startIndex, String newSubstring) {
         if (startIndex < 0 || startIndex >= str.length()) {
@@ -204,6 +216,9 @@ public class Spacerace {
         return str.substring(0, startIndex) + newSubstring + str.substring(endIndex);
     }
 
+    /*****************************************
+    * Print out every character in the array *
+    *****************************************/
     public void displayArt() {
         for (String line : artLines) {
             System.out.println(line);
@@ -218,7 +233,7 @@ public class Spacerace {
      * The main function handles most of the display logic.   *
      * Try section is implemented to display specific text    *
      * based on degree calculated. Date is presented and      *
-     * special cases are included for the solstices and shit. *
+     * special cases are included for solstices/equinoxes.    *
      *********************************************************/
 
     public static void main(String[] args) {
@@ -227,7 +242,7 @@ public class Spacerace {
         LocalDate date = LocalDate.now();
         LocalTime time = LocalTime.now();
 
-        DateTimeFormatter Clocked_in = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+        DateTimeFormatter Clocked_in = DateTimeFormatter.ofPattern("HH:mm");
         DateTimeFormatter formatter = ofPattern("yyyy-MM-dd"); // Define your desired date format
 
         String formattedDate = date.format(formatter);
@@ -246,16 +261,8 @@ public class Spacerace {
         String autumnEqPath = "asciiArt/autumneq.txt";
 
         double position = calculateEarthPosition(date);
-        System.out.println("Approximate position of the Earth on " + date + ": " + position + " degrees");
 
-        spacerace.startTwinkling();
-        System.out.println("Press 'x' to stop twinkling...");
-
-
-        /**********************
-        * HERE LIES THE TRIES *
-        * ********************/
-
+        //Special case handling
         try {
             if(date.equals(winterSolstice)) {
                 spacerace.asciiArt(solsticeAsciiPath);
@@ -274,18 +281,7 @@ public class Spacerace {
         } catch (IOException e) {
             System.out.println("Error loading ASCII art: " + e.getMessage());
         }
-
-        spacerace.startTwinkling(); // Start the twinkling effect
-        System.out.println("Press 'x' to stop twinkling...");
-
-        while (true) {
-            String input = scanner.nextLine();
-            if ("x".equalsIgnoreCase(input)) {
-                spacerace.stopTwinkling(); // Stop the twinkling effect
-                break;
-            }
-        }
-
+        spacerace.startTwinkling();
         scanner.close();
     }
 }
