@@ -6,7 +6,7 @@
 declare -A height_ranges
 height_ranges[0]=500
 height_ranges[1]=620
-height_ranges[2]=700
+height_ranges[2]=710
 # Add more ranges as needed
 
 zoom_level=0
@@ -33,12 +33,14 @@ xdotool windowsize $WINDOW_ID 1020 500
 xdotool windowfocus $WINDOW_ID
 for i in {1..4}; do
     xdotool key --window $WINDOW_ID Ctrl+Shift+minus
-    sleep 0.5
+    sleep 0.25
 done
 
 # Check if an argument was provided
 if [ $# -eq 1 ] && [ "$1" == "-l" ]; then
     echo "Loop mode, be patient with my bugs please."
+
+
 # Continuously check window height and adjust zoom
     while true; do
         # Check if window is still valid
@@ -53,7 +55,7 @@ if [ $# -eq 1 ] && [ "$1" == "-l" ]; then
         # Ensure CURRENT_HEIGHT is an integer
         if ! [[ "$CURRENT_HEIGHT" =~ ^[0-9]+$ ]]; then
             echo "Invalid height value."
-            sleep 2.5
+            sleep 5
             continue
         fi
 
@@ -62,19 +64,21 @@ if [ $# -eq 1 ] && [ "$1" == "-l" ]; then
                 ((zoom_level++))
                 xdotool key --window $WINDOW_ID Ctrl+Shift+plus
        # break
-	            sleep 3.5
+	            sleep 5
+                continue
             fi
         elif [ "$CURRENT_HEIGHT" -lt "${height_ranges[$zoom_level]}" ]; then
             if [ "$zoom_level" -ge 0 ]; then
                 ((zoom_level--))
                 xdotool key --window $WINDOW_ID Ctrl+Shift+minus
        # break
-	            sleep 3.5
+	            sleep 5
+                continue
             fi
         fi
 
     # Short sleep to prevent high CPU usage
-        sleep 1
+        sleep 2.5
     done
 fi
 echo "Bye bye ^-^"
