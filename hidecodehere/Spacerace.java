@@ -6,22 +6,25 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.NavigableMap;
-import static java.time.format.DateTimeFormatter.ofPattern;
+
 
 
 /*
-* This is a rough estimation of where the earth currently is in its orbit path.
-* It is a text based ascii drawing implemented by reprinting a character array
-* over and over to create a slight animation effect. The stars are programed to
-* twinkle at a steady rate while also incrementing seconds on the clock to avoid
-* thread issues. In progress are more animations and up to date information in the
-* text sections.
-*
+ * This is a rough estimation of where the earth currently is in its orbit path.
+ * It is a text based ascii drawing implemented by reprinting a character array
+ * over and over to create a slight animation effect. The stars are programed to
+ * twinkle at a steady rate while also incrementing seconds on the clock to avoid
+ * thread issues. In progress are more animations and up to date information in the
+ * text sections.
+ *
  */
 public class Spacerace {
     public String[] artLines;
@@ -30,10 +33,10 @@ public class Spacerace {
 
 
     /*****************************************************************************************************
-    * Designed for an approximation of earths orbit based on treating it as a 360 degree circle.         *
-    * This project is not suitable for the actual location of earth on its ellipse. More advanced        *
-    * calculations may be done in the future.                                                            *
-    * ***************************************************************************************************/
+     * Designed for an approximation of earths orbit based on treating it as a 360 degree circle.         *
+     * This project is not suitable for the actual location of earth on its ellipse. More advanced        *
+     * calculations may be done in the future.                                                            *
+     * ***************************************************************************************************/
 
     public static double calculateEarthPosition(LocalDate date) {
         // Reference date: January 1st, 2000, where Earth is considered to be at 0 degrees
@@ -68,7 +71,7 @@ public class Spacerace {
         degreeArtMap.put(340, "asciiArt/space34050.txt");
     }
 
-     /*************************************************
+    /*************************************************
      * Takes position calculated and finds the        *
      * corresponding filepath in the Navigable Map    *
      *************************************************/
@@ -89,7 +92,7 @@ public class Spacerace {
         }
     }
 
-     /********************************************
+    /********************************************
      * Creates the array from the file path      *
      * specified. Needed for twinkling and clock. *
      ********************************************/
@@ -99,7 +102,7 @@ public class Spacerace {
         artLines = lines.toArray(new String[0]);
     }
 
-     /********************************
+    /********************************
      * Starts the twinkling function.*
      ********************************/
     public void startTwinkling() {
@@ -123,7 +126,7 @@ public class Spacerace {
     public void twinklingEffect() throws InterruptedException {
         Random random = new Random();
         char[] starFadeChars = {'*', '+', '.', ' '};
-        char[] plusFadeChars = {'┼', '├', '─', ' '}; // Fading characters for '┼'
+        char[] plusFadeChars = {'┼', '├', '─', ' '};
         int maxFadeIndex = starFadeChars.length - 1;
         int maxPlusFadeIndex = plusFadeChars.length -1;
         String[] originalArt = Arrays.copyOf(artLines, artLines.length);
@@ -151,7 +154,8 @@ public class Spacerace {
             }
             LocalTime updatedTime = LocalTime.now();
             String updatedFormattedTime = updatedTime.truncatedTo(ChronoUnit.MINUTES).format(mediumClockedIn);
-            OVER_WRITE(16, 195, String.valueOf(position), 17, 188, formattedDate, 18, 188, updatedFormattedTime);
+            OVER_WRITE("&", String.valueOf(position), "=",
+                    formattedDate, "#", updatedFormattedTime);
 
             displayArt();
             Thread.sleep(1000); // Adjust for desired speed
@@ -160,7 +164,7 @@ public class Spacerace {
     }
 
 
-     /***************************************************************
+    /***************************************************************
      * Clears the previous string array output to help with format. *
      ***************************************************************/
 
@@ -172,7 +176,7 @@ public class Spacerace {
         System.out.flush();
     }
 
-     /******************************************************************************
+    /******************************************************************************
      * Finds the positions of two specified markers in the array. Use this to find *
      * and mark locations in the array for desired changes.                        *
      ******************************************************************************/
@@ -195,41 +199,98 @@ public class Spacerace {
      * Locations of the markers as well as the desired new string are passed in to overwrite with time, date, coord.  *
      *****************************************************************************************************************/
 
-    public void OVER_WRITE(int row1, int col1, String new_row1, int row2, int col2, String new_row2, int row3, int col3, String new_row3) {
-        artLines[row1] = replaceSubstring(artLines[row1], col1, String.valueOf(new_row1));
-        artLines[row2] = replaceSubstring(artLines[row2], col2, String.valueOf(new_row2));
-        artLines[row3] = replaceSubstring(artLines[row3], col3, String.valueOf(new_row3));
+    public void OVER_WRITE(String marker1, String replacement1, String marker2,
+                           String replacement2, String marker3, String replacement3) {
+        for (int i = 0; i < artLines.length; i++) {
+            artLines[i] = replaceSubstring(artLines[i], marker1, replacement1);
+            artLines[i] = replaceSubstring(artLines[i], marker2, replacement2);
+            artLines[i] = replaceSubstring(artLines[i], marker3, replacement3);
+        }
     }
 
-     /********************************************************************************
+
+    /********************************************************************************
      * Logic to input actual time, date, and coordinates on their respective markers *
      ********************************************************************************/
 
-    private String replaceSubstring(String str, int startIndex, String newSubstring) {
-        if (startIndex < 0 || startIndex >= str.length()) {
-            return str; // Index out of bounds, return the original string
+    private String replaceSubstring(String str, String marker, String replacement) {
+        int startIndex = str.indexOf(marker);
+        if (startIndex == -1) {
+            return str;
         }
-        int endIndex = startIndex + newSubstring.length();
-        if (endIndex > str.length()) {
-            endIndex = str.length();
+
+        StringBuilder newStr = new StringBuilder(str);
+
+        // Replace characters starting from the marker position
+        int replacementIndex = 0;
+        for (int i = startIndex; i < str.length() && replacementIndex < replacement.length(); i++) {
+            newStr.setCharAt(i, replacement.charAt(replacementIndex));
+            replacementIndex++;
         }
-        return str.substring(0, startIndex) + newSubstring + str.substring(endIndex);
+
+        return newStr.toString();
     }
 
+
     /*****************************************
-    * Print out every character in the array *
-    *****************************************/
+     * Print out every character in the array *
+     *****************************************/
     public void displayArt() {
         for (String line : artLines) {
             System.out.println(line);
         }
     }
 
+    /*******************************************
+    *  Logic for removing specific row indices *
+    *******************************************/
+
+    public void modifyArtLines(Set<Integer> rowsToRemove) {
+        List<String> modifiedArtLines = new ArrayList<>();
+        for (int i = 0; i < artLines.length; i++) {
+            if (!rowsToRemove.contains(i)) {
+                modifiedArtLines.add(artLines[i]);
+            }
+        }
+        artLines = modifiedArtLines.toArray(new String[0]);
+    }
+
+
+     /*********************************************************************
+     * Pulled out of main for readability, logic for passing "mini mode"  *
+     * -m followed by and integer or range of integers. This allows for   *
+     * deeper customization and can now be run on a mobile application    *
+     * such as termux.                                                    *
+     *********************************************************************/
+
+
+    private Set<Integer> ParseCmdLine(String[] args) {
+        Set<Integer> rowsToRemoveSet = new HashSet<>();
+        for (int i = 0; i < args.length; i++) {
+            if ("-m".equals(args[i]) && i + 1 < args.length) {
+                // Assuming the -m option is followed by a list of row indices
+                String[] parts = args[i + 1].split(",");
+                for (String part : parts) {
+                    if (part.contains("-")) {
+                        String[] range = part.split("-");
+                        int start = Integer.parseInt(range[0]);
+                        int end = Integer.parseInt(range[1]);
+                        for (int j = start; j <= end; j++) {
+                            rowsToRemoveSet.add(j);
+                        }
+                    } else {
+                        rowsToRemoveSet.add(Integer.parseInt(part));
+                    }
+                }
+            }
+        }
+        return rowsToRemoveSet;
+    }
 
     /********************
-    * HEART OF DARKNESS *
-    * ******************/
-     /*********************************************************
+     * HEART OF DARKNESS *
+     * ******************/
+    /*********************************************************
      * The main function handles most of the display logic.   *
      * Try section is implemented to display specific text    *
      * based on degree calculated. Date is presented and      *
@@ -237,16 +298,15 @@ public class Spacerace {
      *********************************************************/
 
     public static void main(String[] args) {
+
+
+        //Prepare all variables for loading our orbital map
         Spacerace spacerace = new Spacerace();
         Scanner scanner = new Scanner(System.in);
+
+        Set<Integer> rowsToRemoveSet = spacerace.ParseCmdLine(args);
+
         LocalDate date = LocalDate.now();
-        LocalTime time = LocalTime.now();
-
-        DateTimeFormatter Clocked_in = DateTimeFormatter.ofPattern("HH:mm");
-        DateTimeFormatter formatter = ofPattern("yyyy-MM-dd"); // Define your desired date format
-
-        String formattedDate = date.format(formatter);
-        String formattedTime = time.format(Clocked_in);
 
         LocalDate winterSolstice = LocalDate.of(date.getYear(), 12, 21);
         String solsticeAsciiPath = "asciiArt/solstice.txt";
@@ -275,9 +335,8 @@ public class Spacerace {
             }else {
                 spacerace.loadAsciiArtForCurrentPosition(position);
             }
-            //spacerace.findMarkerPositions('!', '=');
-            spacerace.OVER_WRITE(16, 195, String.valueOf(position), 17, 188, formattedDate, 18, 188, String.valueOf(formattedTime));
-            spacerace.displayArt(); // Display initial art
+            spacerace.modifyArtLines(rowsToRemoveSet);
+            spacerace.displayArt();
         } catch (IOException e) {
             System.out.println("Error loading ASCII art: " + e.getMessage());
         }
