@@ -11,7 +11,7 @@ height_ranges[2]=710
 
 zoom_level=0
 
-# Launch the terminal and run Java program
+
 kitty java Spacerace &
 
 # Give some time for the terminal to launch
