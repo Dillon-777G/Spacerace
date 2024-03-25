@@ -1,3 +1,5 @@
+
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,8 +30,7 @@ import java.util.NavigableMap;
  */
 public class Spacerace {
     public String[] artLines;
-    private Thread twinklingThread;
-    private NavigableMap<Integer, String> degreeArtMap = new TreeMap<>();
+    private final NavigableMap<Integer, String> degreeArtMap = new TreeMap<>();
 
 
     /*****************************************************************************************************
@@ -106,7 +107,7 @@ public class Spacerace {
      * Starts the twinkling function.*
      ********************************/
     public void startTwinkling() {
-        twinklingThread = new Thread(() -> {
+        Thread twinklingThread = new Thread(() -> {
             try {
                 twinklingEffect();
             } catch (InterruptedException e) {
@@ -288,8 +289,8 @@ public class Spacerace {
     }
 
     /********************
-     * HEART OF DARKNESS *
-     * ******************/
+    * HEART OF DARKNESS *
+    *********************/
     /*********************************************************
      * The main function handles most of the display logic.   *
      * Try section is implemented to display specific text    *
