@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="orekit-tutorials" />
+        <module name="Spacerace" />
       </profile>
     </annotationProcessing>
   </component>

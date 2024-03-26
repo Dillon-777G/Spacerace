@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/javaprava.iml" filepath="$PROJECT_DIR$/.idea/javaprava.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Spacerace.iml" filepath="$PROJECT_DIR$/.idea/Spacerace.iml" />
     </modules>
   </component>
 </project>

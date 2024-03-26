@@ -1,0 +1,13 @@
+[package]
+name = "orbital_clock"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+term_size = "0.3.2"
+chrono = "0.4"
+rand = "0.8"
+ratatui = "0.26.1"
+crossterm = "0.27.0"
